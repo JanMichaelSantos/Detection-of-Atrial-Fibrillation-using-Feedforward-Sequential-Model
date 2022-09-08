@@ -1,0 +1,15 @@
+
+*.npz
+*.csv
+*.atr
+*.hea
+*.qrs
+*.hea-
+*.dat
+*.xws
+*.qrsc
+*.atr-
+*.qrs-
+af_detection/DATASETS/mit-bih-atrial-fibrillation-database-1.0.0/files/ANNOTATORS
+*.txt
+af_detection/DATASETS/mit-bih-atrial-fibrillation-database-1.0.0/files/RECORDS
