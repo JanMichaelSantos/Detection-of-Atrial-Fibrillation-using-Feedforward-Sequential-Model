@@ -25,12 +25,13 @@ np.random.seed(seed)
 
 # set the directory where the data lives
 froot = os.getcwd()
-fpath = ('/data/patient_data_100_beat_window_99_beat_overlap/train/')
+#fpath = ('/data/patient_data_100_beat_window_99_beat_overlap/train/')
+fpath = ('/DATASETS/chunks/')
 root_dir =  froot + fpath
 
 # get the patient IDs
 filelist = glob.glob(root_dir + '*.csv', recursive=True)
-patients  = [(os.path.split(i)[1]).split('_')[0] for i in filelist]
+patients  = [(os.path.split(i)[1]).split('.')[0] for i in filelist]
 
 # read all the data into a single data frame
 frames = [pd.read_csv(p, header=None) for p in filelist]
