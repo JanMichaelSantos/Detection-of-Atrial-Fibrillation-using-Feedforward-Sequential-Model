@@ -13,3 +13,4 @@
 af_detection/DATASETS/mit-bih-atrial-fibrillation-database-1.0.0/files/ANNOTATORS
 *.txt
 af_detection/DATASETS/mit-bih-atrial-fibrillation-database-1.0.0/files/RECORDS
+af_detection/DATASETS/dat2csv copy.py
