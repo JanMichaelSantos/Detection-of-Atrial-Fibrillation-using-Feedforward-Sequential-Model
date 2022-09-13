@@ -43,7 +43,7 @@ for i in range(0,len(dat_files)):
     record_qrsc = wfdb.rdann(patients[i],extension ='qrs',shift_samps=True)
     
     #Get random indeces for RR
-    n_sample = 20000
+    n_sample = 50000
     indeces = list(range(1,len(record_qrsc.sample)-5))
     random.shuffle(indeces)
     indeces = indeces[0:n_sample]
@@ -75,13 +75,26 @@ for i in range(0,len(dat_files)):
                     elif record_atr.aux_note[atr_index] == '(AFIB': 
                         afib_window = np.vstack((afib_window ,record_f_n[:,0]))
 
-                    #Make AFIB and N-AFIB data balanced
-                    if len(nafib_window) < len(afib_window):
-                        afib_window = afib_window[0:len(nafib_window)]
                     break # Exit Finding of ATR index loop 
                         
             else: 
                     pass
+
+'''
+print('AFIB SHAPE: ',np.shape(afib_window))
+print('N-AFIB SHAPE: ',np.shape(nafib_window))'''
+
+#Make AFIB and N-AFIB data balanced
+if len(nafib_window) < len(afib_window):
+    indeces = list(range(0,len(afib_window)))
+    random.shuffle(indeces)
+    indeces = indeces[0:len(nafib_window)]
+    afib_window = afib_window[indeces]
+elif len(nafib_window) > len(afib_window):
+    indeces = list(range(0,len(nafib_window)))
+    random.shuffle(indeces)
+    indeces = indeces[0:len(afib_window)]
+    nafib_window = nafib_window[indeces]
 
 # SAVE AFIB DATA WITH LABELS TO CSV
 afib_window = afib_window[1:,:]
@@ -92,6 +105,6 @@ print(len(afib_window), " rows, AFIB.csv dataset saved on ",ftarget_f_n)
 # SAVE NO-AFIB DATA WITH LABELS TO CSV
 path='N_AFIB.csv'
 nafib_window = nafib_window[1:,:]
-np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
+np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
 print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
 
