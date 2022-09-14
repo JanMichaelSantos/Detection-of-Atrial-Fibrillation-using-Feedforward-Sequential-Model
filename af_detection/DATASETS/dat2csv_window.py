@@ -29,11 +29,11 @@ patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 ftarget_f_n=  froot + '/DATASETS/csv_files/'
 
 #INIT RECORD WINDOW SIZE OF 500 SAMPLES
-window_size = 7500
-n_windows = 60
+window_size = 1200
+n_windows = 6
 afib_window = np.zeros(window_size)
 nafib_window = np.zeros(window_size)
-n_sample = 20000
+n_sample = 100
 
 print('Time Start: ', datetime.now())
 for i in range(0,len(dat_files)):
@@ -89,6 +89,8 @@ for i in range(0,len(dat_files)):
 print('AFIB SHAPE: ',np.shape(afib_window))
 print('N-AFIB SHAPE: ',np.shape(nafib_window))'''
 
+afib_window = afib_window[1:,:]
+nafib_window = nafib_window[1:,:]
 #Make AFIB and N-AFIB data balanced
 if len(nafib_window) < len(afib_window):
     indeces = list(range(0,len(afib_window)))
@@ -102,14 +104,13 @@ elif len(nafib_window) > len(afib_window):
     nafib_window = nafib_window[indeces]
 
 # SAVE AFIB DATA WITH LABELS TO CSV
-afib_window = afib_window[1:,:]
+
 path='AFIB.csv'
 np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
 print(len(afib_window), " rows, AFIB.csv dataset saved on ",ftarget_f_n)
 
 # SAVE NO-AFIB DATA WITH LABELS TO CSV
 path='N_AFIB.csv'
-nafib_window = nafib_window[1:,:]
 np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
 print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
 
