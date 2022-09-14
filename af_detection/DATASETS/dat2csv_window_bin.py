@@ -65,33 +65,35 @@ for i in range(0,len(dat_files)):
         #Check if sample index is AFIB or N_AFIB
         for rr_index in indeces:
             rr_i = record_qrsc.sample[rr_index:rr_index+(n_windows+1)]
+            if len(rr_i)<n_windows: break
             for atr_index in range(len(record_atr.sample)-1,0,-1):
-                #Find AUX_NOTE of lower boundary
-                if rr_i[-1] < record_atr.sample[atr_index]:
-                    if  rr_i[0] >=  record_atr.sample[atr_index-1]:
-                        #Apply processing on chose record samples
-                        w1 = signal.resample(record[rr_i[0]:rr_i[-1]],window_size)
+                try:
+                    #Find AUX_NOTE of lower boundary
+                    if rr_i[-1] < record_atr.sample[atr_index]:
+                        if  rr_i[0] >=  record_atr.sample[atr_index-1]:
+                            #Apply processing on chose record samples
+                            w1 = signal.resample(record[rr_i[0]:rr_i[-1]],window_size)
 
-                        #Filter Signals
-                        fs_n = 250
-                        hpf = signal.butter(6, 4, 'high', fs=fs_n, output='sos') #Highpass Butterworth filter, 1Hz cutoff
-                        lpf = signal.butter(6, 35, 'low', fs=fs_n, output='sos') #Lowpass Butterworth filter, 35Hz cutoff
-                        record_f = signal.sosfilt(lpf, signal.sosfilt(hpf, w1)) #Apply filter
+                            #Filter Signals
+                            fs_n = 250
+                            hpf = signal.butter(6, 4, 'high', fs=fs_n, output='sos') #Highpass Butterworth filter, 1Hz cutoff
+                            lpf = signal.butter(6, 35, 'low', fs=fs_n, output='sos') #Lowpass Butterworth filter, 35Hz cutoff
+                            record_f = signal.sosfilt(lpf, signal.sosfilt(hpf, w1)) #Apply filter
 
-                        #Normalize Signals
-                        record_f_2c = np.column_stack((record_f,record_f))
-                        scaler = MinMaxScaler(feature_range=(0, 1))
-                        scaler.fit(record_f_2c)
-                        record_f_n = scaler.transform(record_f_2c)
+                            #Normalize Signals
+                            record_f_2c = np.column_stack((record_f,record_f))
+                            scaler = MinMaxScaler(feature_range=(0, 1))
+                            scaler.fit(record_f_2c)
+                            record_f_n = scaler.transform(record_f_2c)
 
-                        if  record_atr.aux_note[atr_index] == '(N': 
-                            nafib_window = np.vstack((nafib_window ,record_f_n[:,0]))
-                        elif record_atr.aux_note[atr_index] == '(AFIB': 
-                            afib_window = np.vstack((afib_window ,record_f_n[:,0]))
-
-                        break # Exit Finding of ATR index loop 
-                else: 
-                        pass
+                            if  record_atr.aux_note[atr_index] == '(N': 
+                                nafib_window = np.vstack((nafib_window ,record_f_n[:,0]))
+                            elif record_atr.aux_note[atr_index] == '(AFIB': 
+                                afib_window = np.vstack((afib_window ,record_f_n[:,0]))
+                            break # Exit Finding of ATR index loop 
+                    else: pass
+                except Exception as e_loop:
+                    print(e_loop)
         
         if (len(np.shape(afib_window))) > 1:
             afib_window = afib_window[1:,:]
@@ -108,15 +110,18 @@ for i in range(0,len(dat_files)):
                 random.shuffle(indeces)
                 indeces = indeces[0:len(afib_window)]
                 nafib_window = nafib_window[indeces]
+            try:
+                # SAVE AFIB DATA WITH LABELS TO CSV
+                path=str(patients[i])+'_'+str(bin)+'_AFIB.csv'
+                np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
+                print(len(afib_window), 'rows,' +str(path)+' dataset saved on ',ftarget_f_n)
 
-            # SAVE AFIB DATA WITH LABELS TO CSV
-            path=str(patients[i])+'_'+str(bin)+'_AFIB.csv'
-            np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
-            print(len(afib_window), 'rows,' +str(path)+' dataset saved on ',ftarget_f_n)
-
-            # SAVE NO-AFIB DATA WITH LABELS TO CSV
-            path=str(patients[i])+'_'+str(bin)+'_N_AFIB.csv'
-            np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
-            print(len(nafib_window), 'rows,' +str(path)+' dataset saved on ',ftarget_f_n)
+                # SAVE NO-AFIB DATA WITH LABELS TO CSV
+                path=str(patients[i])+'_'+str(bin)+'_N_AFIB.csv'
+                np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
+                print(len(nafib_window), 'rows,' +str(path)+' dataset saved on ',ftarget_f_n)
+            except Exception as e:
+                print(e)
+            
 
             print('Time End: ', datetime.now())                                     
