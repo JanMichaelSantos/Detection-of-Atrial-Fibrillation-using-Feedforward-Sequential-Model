@@ -26,7 +26,7 @@ import pickle
 import numpy as np
 
 # import keras deep learning functionality
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.layers import Input
 from keras.layers import LSTM
 from keras.layers import Bidirectional
@@ -48,7 +48,7 @@ np.random.seed(seed)
 #
 
 # load the npz file
-data_path = './data/training_data.npz'
+data_path = './DATASETS/training_data.npz'
 af_data   = np.load(data_path)
 
 # extract the training and validation data sets from this data
@@ -65,13 +65,13 @@ x_data = x_data.reshape(x_data.shape[0], x_data.shape[1], 1)
 # set the model parameters
 n_timesteps = x_data.shape[1]
 mode = 'concat'
-n_epochs = 80
-batch_size = 1024
+n_epochs = 300
+batch_size = 2048
 
 # create a bidirectional lstm model (based around the model in:
 # https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
 # )
-inp = Input(shape=(n_timesteps,1,))
+'''inp = Input(shape=(n_timesteps,1,))
 x = Bidirectional(LSTM(200, 
                        return_sequences=True, 
                        dropout=0.1, 
@@ -80,7 +80,13 @@ x = GlobalMaxPool1D()(x)
 x = Dense(50, activation="relu")(x)
 x = Dropout(0.1)(x)
 x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)
+model = Model(inputs=inp, outputs=x)'''
+
+# SQEUENTIAL
+model = Sequential()
+model.add(Dense(200, activation='relu', input_dim=500))
+model.add(Dense(50, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
 opt = Adam()
@@ -125,7 +131,7 @@ for train_index, test_index in kf.split(x_data, y_data):
     # to save our weights)
     directory = results_dir + 'fold_{0}/'.format(fold)
     os.makedirs(directory)
-    filename  = 'af_lstm_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
+    filename  = 'af_sequence_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
     checkpointer = ModelCheckpoint(filepath=directory+filename, 
                                    verbose=0, 
                                    save_best_only=True)    

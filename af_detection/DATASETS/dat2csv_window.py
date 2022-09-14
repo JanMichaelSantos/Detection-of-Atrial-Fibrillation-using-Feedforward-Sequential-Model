@@ -7,7 +7,7 @@ Reference used for filter cutoff frequencies (Data Description Section)
 Read ECG dat files and create a csv file 
 with each row having a filtered and normalized 3 cycles of pqrst waves
 '''
-from time import sleep
+from time import sleep, time
 import os
 import wfdb
 import glob
@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from scipy import signal as signal
 import random
+from datetime import datetime
 
 #change working directory
 froot = 'E:'
@@ -28,9 +29,13 @@ patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 ftarget_f_n=  froot + '/DATASETS/csv_files/'
 
 #INIT RECORD WINDOW SIZE OF 500 SAMPLES
-window_size = 500
+window_size = 7500
+n_windows = 60
 afib_window = np.zeros(window_size)
 nafib_window = np.zeros(window_size)
+n_sample = 20000
+
+print('Time Start: ', datetime.now())
 for i in range(0,len(dat_files)):
     print('Patient: ',patients[i],' Progress: '+str(i+1)+"/" +str(len(dat_files)))
     #Get ECG1 Data
@@ -43,20 +48,19 @@ for i in range(0,len(dat_files)):
     record_qrsc = wfdb.rdann(patients[i],extension ='qrs',shift_samps=True)
     
     #Get random indeces for RR
-    n_sample = 50000
-    indeces = list(range(1,len(record_qrsc.sample)-5))
+    indeces = list(range(1,len(record_qrsc.sample)-n_windows-1))
     random.shuffle(indeces)
     indeces = indeces[0:n_sample]
     
     #Check if sample index is AFIB or N_AFIB
     for rr_index in indeces:
-        rr_i = record_qrsc.sample[rr_index:rr_index+4]
+        rr_i = record_qrsc.sample[rr_index:rr_index+(n_windows+1)]
         for atr_index in range(len(record_atr.sample)-1,0,-1):
             #Find AUX_NOTE of lower boundary
-            if rr_i[3] < record_atr.sample[atr_index]:
+            if rr_i[-1] < record_atr.sample[atr_index]:
                 if  rr_i[0] >=  record_atr.sample[atr_index-1]:
                     #Apply processing on chose record samples
-                    w1 = signal.resample(record[rr_i[0]:rr_i[3]],window_size)
+                    w1 = signal.resample(record[rr_i[0]:rr_i[-1]],window_size)
 
                     #Filter Signals
                     fs_n = 250
@@ -79,6 +83,7 @@ for i in range(0,len(dat_files)):
                         
             else: 
                     pass
+    print('Current Size: ', np.shape(afib_window))
 
 '''
 print('AFIB SHAPE: ',np.shape(afib_window))
@@ -108,3 +113,4 @@ nafib_window = nafib_window[1:,:]
 np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
 print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
 
+print('Time End: ', datetime.now())

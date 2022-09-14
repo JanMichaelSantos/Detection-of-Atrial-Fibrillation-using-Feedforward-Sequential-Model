@@ -24,7 +24,7 @@ import pickle
 import numpy as np
 
 # import keras deep learning functionality
-from keras.models import Model
+from keras.models import Model,Sequential
 from keras.layers import Input
 from keras.layers import LSTM
 from keras.layers import Bidirectional
@@ -50,7 +50,7 @@ headless = False
 #
 
 # load the npz file
-data_path = './data/training_and_validation.npz'
+data_path = './DATASETS/training_and_validation.npz'
 af_data   = np.load(data_path)
 
 # extract the training and validation data sets from this data
@@ -66,21 +66,15 @@ y_test  = af_data['y_test']
 # set the model parameters
 n_timesteps = x_train.shape[1]
 mode = 'concat'
-n_epochs = 2 #200
-batch_size = 1024
+n_epochs = 500 
+batch_size = 8192
 
-# create a bidirectional lstm model (based around the model in:
-# https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
-# )
-inp = Input(shape=(n_timesteps,1,))
-x = Bidirectional(LSTM(200, 
-                       return_sequences=True, 
-                       dropout=0.1, recurrent_dropout=0.1))(inp)
-x = GlobalMaxPool1D()(x)
-x = Dense(50, activation="relu")(x)
-x = Dropout(0.1)(x)
-x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)
+
+# SQEUENTIAL
+model = Sequential()
+model.add(Dense(200, activation='relu', input_dim=500))
+model.add(Dense(50, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
 opt = Adam()
@@ -92,7 +86,7 @@ model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 # save our weights)
 directory = './model/initial_runs_{0}/'.format(time.strftime("%Y%m%d_%H%M"))
 os.makedirs(directory)
-filename  = 'af_lstm_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
+filename  = 'af_sequence_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
 checkpointer = ModelCheckpoint(filepath=directory+filename, 
                                verbose=1, 
                                save_best_only=True)
@@ -136,7 +130,7 @@ plt.text(0.4, 0.05,
          ('validation accuracy = {0:.3f}'.format(best_accuracy)), 
          ha='left', va='center', 
          transform=ax1.transAxes)
-plt.savefig('af_lstm_training_accuracy_{0}.png'
+plt.savefig('af_sequence_training_accuracy_{0}.png'
             .format(time.strftime("%Y%m%d_%H%M")))
 
 # loss
@@ -153,7 +147,7 @@ plt.text(0.4, 0.05,
           .format(min(history.history['val_loss']))), 
          ha='right', va='top', 
          transform=ax2.transAxes)
-plt.savefig('af_lstm_training_loss_{0}.png'
+plt.savefig('af_sequence_training_loss_{0}.png'
             .format(time.strftime("%Y%m%d_%H%M")))
 
 # we're all done!
