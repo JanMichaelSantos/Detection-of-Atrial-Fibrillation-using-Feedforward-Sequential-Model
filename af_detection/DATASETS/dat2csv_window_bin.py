@@ -18,17 +18,18 @@ from scipy import signal as signal
 import random
 from datetime import datetime
 
-#change working directory
+#Target Directory
 froot = 'E:'
+ftarget_f_n=  froot + '/DATASETS/csv_files/'
+
+#change working directory
 os.chdir(froot+"/DATASETS/mit-bih-atrial-fibrillation-database-1.0.0/files/")
 
 #Get list of all .dat files in the current folder
 dat_files=glob.glob('*.dat') 
 patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 
-ftarget_f_n=  froot + '/DATASETS/csv_files/'
-
-#INIT RECORD WINDOW SIZE OF 500 SAMPLES
+#INIT RECORD WINDOW SIZE OF 1200 SAMPLES
 window_size = 1200
 n_windows = 6
 n_bins = 10
