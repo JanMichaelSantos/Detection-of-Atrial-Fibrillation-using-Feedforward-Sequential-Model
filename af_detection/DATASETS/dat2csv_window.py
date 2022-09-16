@@ -29,11 +29,12 @@ patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 ftarget_f_n=  froot + '/DATASETS/csv_files/'
 
 #INIT RECORD WINDOW SIZE OF 500 SAMPLES
-window_size = 1200
-n_windows = 6
+window_size = 500
+n_windows = 3
 afib_window = np.zeros(window_size)
 nafib_window = np.zeros(window_size)
-n_sample = 100
+#n_sample = 100
+
 
 print('Time Start: ', datetime.now())
 for i in range(0,len(dat_files)):
@@ -50,7 +51,7 @@ for i in range(0,len(dat_files)):
     #Get random indeces for RR
     indeces = list(range(1,len(record_qrsc.sample)-n_windows-1))
     random.shuffle(indeces)
-    indeces = indeces[0:n_sample]
+    #indeces = indeces[0:n_sample]
     
     #Check if sample index is AFIB or N_AFIB
     for rr_index in indeces:

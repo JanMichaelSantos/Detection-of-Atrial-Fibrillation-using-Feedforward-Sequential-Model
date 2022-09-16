@@ -30,15 +30,15 @@ dat_files=glob.glob('*.dat')
 patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 
 #INIT RECORD WINDOW SIZE OF 1200 SAMPLES
-window_size = 1200
-n_windows = 6
+window_size = 500
+n_windows = 4
 n_bins = 10
 n_sample = 50000 #max 40k
 
 #EDIT TO SHARE LOAD
 # JAN 0-2
 # ED 3-5
-b1 = 6
+b1 = 0
 b2 = 9 #max is n_bins -1
 
 print('Time Start: ', datetime.now())
@@ -57,16 +57,17 @@ for i in range(0,len(dat_files)):
         afib_window = np.zeros(window_size)
         nafib_window = np.zeros(window_size)
         #Get random indeces for RR
-        i_s = (len(record_qrsc.sample)*bin)/10+1
-        i_e = (len(record_qrsc.sample)*(bin+1))/10-n_windows-1
+        i_s = int((len(record_qrsc.sample)*bin)/10+1)
+        i_e = int((len(record_qrsc.sample)*(bin+1))/10-n_windows-1)
         indeces = list(range(int(i_s),int(i_e)))
         random.shuffle(indeces)
-        indeces = indeces[0:n_sample]
+        if n_sample < (record_qrsc.sample[i_e]-record_qrsc.sample[i_s]):
+            indeces = indeces[0:n_sample]
+
 
         #Check if sample index is AFIB or N_AFIB
         for rr_index in indeces:
             rr_i = record_qrsc.sample[rr_index:rr_index+(n_windows+1)]
-            if len(rr_i)<n_windows: break
             for atr_index in range(len(record_atr.sample)-1,0,-1):
                 try:
                     #Find AUX_NOTE of lower boundary

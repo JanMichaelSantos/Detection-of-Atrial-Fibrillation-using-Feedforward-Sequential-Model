@@ -65,15 +65,17 @@ y_test  = af_data['y_test']
 
 # set the model parameters
 n_timesteps = x_train.shape[1]
+n_col = len(x_train[0])
 mode = 'concat'
-n_epochs = 500 
-batch_size = 8192
+n_epochs = 2000 
+batch_size = 133120
 
 
 # SQEUENTIAL
 model = Sequential()
-model.add(Dense(200, activation='relu', input_dim=500))
-model.add(Dense(50, activation='relu'))
+model.add(Dense(300, activation='relu', input_dim=n_col))
+model.add(Dense(100, activation='relu'))
+model.add(Dense(10, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
