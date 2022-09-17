@@ -68,14 +68,12 @@ n_timesteps = x_train.shape[1]
 n_col = len(x_train[0])
 mode = 'concat'
 n_epochs = 2000 
-batch_size = 133120
-
+batch_size = 133120 #n rows
 
 # SQEUENTIAL
 model = Sequential()
-model.add(Dense(300, activation='relu', input_dim=n_col))
-model.add(Dense(100, activation='relu'))
-model.add(Dense(10, activation='relu'))
+model.add(Dense(128, activation='relu', input_dim=n_col))
+model.add(Dense(32, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
