@@ -12,10 +12,11 @@ import numpy as np
 
 # import keras deep learning functionality
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense,Dropout
 from keras.optimizers import Adam
 import keras.metrics as Kmetrics
 from keras.callbacks import ModelCheckpoint
+from sklearn.metrics import confusion_matrix
 
 # fix random seed for reproduciblity
 seed = 1337
@@ -47,12 +48,13 @@ y_test  = af_data['y_test']
 n_timesteps = x_train.shape[1]
 n_col = len(x_train[0])
 mode = 'concat'
-n_epochs = 2000 
-batch_size = 8192 #n rows
+n_epochs = 4000 
+batch_size = int(1024*256) #n rows
 
 # SQEUENTIAL
 model = Sequential()
 model.add(Dense(128, activation='relu', input_dim=n_col))
+model.add(Dropout(0.20))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
@@ -61,6 +63,7 @@ opt = Adam()
 met = [ Kmetrics.BinaryAccuracy, 
         Kmetrics.SpecificityAtSensitivity,
         Kmetrics.SensitivityAtSpecificity]
+
 # compile the model
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 
@@ -98,7 +101,6 @@ if headless:
 import matplotlib.pyplot as plt
 
 # plot the results
-
 # accuracy
 f1 = plt.figure()
 ax1 = f1.add_subplot(111)
@@ -112,7 +114,7 @@ plt.text(0.4, 0.05,
          ('validation accuracy = {0:.3f}'.format(best_accuracy)), 
          ha='left', va='center', 
          transform=ax1.transAxes)
-plt.savefig('/Plots/af_sequence_training_accuracy_{0}.png'
+plt.savefig('./Plots/af_sequence_training_accuracy_{0}.png'
             .format(time.strftime("%Y%m%d_%H%M")))
 
 # loss
@@ -129,7 +131,7 @@ plt.text(0.4, 0.05,
           .format(min(history.history['val_loss']))), 
          ha='right', va='top', 
          transform=ax2.transAxes)
-plt.savefig('/Plots/af_sequence_training_loss_{0}.png'
+plt.savefig('./Plots/af_sequence_training_loss_{0}.png'
             .format(time.strftime("%Y%m%d_%H%M")))
 
 # we're all done!
