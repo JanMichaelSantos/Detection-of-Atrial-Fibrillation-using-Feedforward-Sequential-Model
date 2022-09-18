@@ -1,22 +1,9 @@
-"""
-af_initial_model_fitting.py
+'''
+Create a n
 
-fitting a simple bidirectional LSTM model to the af data - now including extra
-dropout, an extra fully connected layer, and using the keras functional model
 
-the ideas behind the bidirectional lstm model come from: 
-    
-https://machinelearningmastery.com/
-develop-bidirectional-lstm-sequence-classification-python-keras/
-
-author:     alex shenfield
-date:       01/04/2018
-"""
-
-# file handling functionality
+'''
 import os
-
-# useful utilities
 import time
 import pickle
 
@@ -24,17 +11,10 @@ import pickle
 import numpy as np
 
 # import keras deep learning functionality
-from keras.models import Model,Sequential
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.layers import Bidirectional
-from keras.layers import GlobalMaxPool1D
+from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import Dropout
-
-from keras.optimizers import SGD
 from keras.optimizers import Adam
-
+import keras.metrics as Kmetrics
 from keras.callbacks import ModelCheckpoint
 
 # fix random seed for reproduciblity
@@ -68,7 +48,7 @@ n_timesteps = x_train.shape[1]
 n_col = len(x_train[0])
 mode = 'concat'
 n_epochs = 2000 
-batch_size = 133120 #n rows
+batch_size = 8192 #n rows
 
 # SQEUENTIAL
 model = Sequential()
@@ -78,7 +58,9 @@ model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
 opt = Adam()
-
+met = [ Kmetrics.BinaryAccuracy, 
+        Kmetrics.SpecificityAtSensitivity,
+        Kmetrics.SensitivityAtSpecificity]
 # compile the model
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 
@@ -130,7 +112,7 @@ plt.text(0.4, 0.05,
          ('validation accuracy = {0:.3f}'.format(best_accuracy)), 
          ha='left', va='center', 
          transform=ax1.transAxes)
-plt.savefig('af_sequence_training_accuracy_{0}.png'
+plt.savefig('/Plots/af_sequence_training_accuracy_{0}.png'
             .format(time.strftime("%Y%m%d_%H%M")))
 
 # loss
@@ -147,7 +129,7 @@ plt.text(0.4, 0.05,
           .format(min(history.history['val_loss']))), 
          ha='right', va='top', 
          transform=ax2.transAxes)
-plt.savefig('af_sequence_training_loss_{0}.png'
+plt.savefig('/Plots/af_sequence_training_loss_{0}.png'
             .format(time.strftime("%Y%m%d_%H%M")))
 
 # we're all done!

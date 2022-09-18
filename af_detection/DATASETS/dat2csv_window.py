@@ -28,14 +28,21 @@ patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 
 ftarget_f_n=  froot + '/DATASETS/csv_files/'
 
-#INIT RECORD WINDOW SIZE OF 500 SAMPLES
-window_size = 512
-n_windows = 3
-afib_window = np.zeros(window_size)
-nafib_window = np.zeros(window_size)
 
-print('Time Start: ', datetime.now())
-for i in range(0,len(dat_files)):
+
+# NOTE!!! THIS PATIENTS ONLY HAS 1 LABEL
+# patient[13] aux note label is only (N, all data is normal
+# patient[14] aux note label is only (AFIB, all data is atrial fib
+
+for i in range(15,len(dat_files)):
+#for i in range(x,x+1):
+    #INIT RECORD WINDOW SIZE OF 500 SAMPLES
+    window_size = 512
+    n_windows = 3
+    afib_window = np.zeros(window_size)
+    nafib_window = np.zeros(window_size)
+
+    print('Time Start: ', datetime.now())
     print('Patient: ',patients[i],' Progress: '+str(i+1)+"/" +str(len(dat_files)))
     #Get ECG1 Data
     record,fields = wfdb.rdsamp(patients[i])
@@ -57,9 +64,9 @@ for i in range(0,len(dat_files)):
     #Check if sample index is AFIB or N_AFIB
     for rr_index in indeces:
         rr_i = record_qrsc.sample[rr_index:rr_index+(n_windows+1)]  #get n cycles
-        for atr_index in range(len(record_atr.sample)-1,0,-1):
+        for atr_index in range(0,len(record_atr.sample)-1):
             #Find AUX_NOTE of lower boundary
-            if rr_i[-1] < record_atr.sample[atr_index] and rr_i[0] >=  record_atr.sample[atr_index-1]: #Check if window is between N and AFIB
+            if rr_i[-1] < record_atr.sample[atr_index+1] and rr_i[0] >=  record_atr.sample[atr_index]: #Check if window is between N and AFIB
                 #Apply processing on chose record samples
                 w1 = signal.resample(record[rr_i[0]:rr_i[-1]],window_size)
                 #Filter Signals
@@ -84,35 +91,36 @@ for i in range(0,len(dat_files)):
                     
             else: 
                     pass
-    print('Current Size: ', np.shape(afib_window))
+    print('Current Size AFIB: ', np.shape(afib_window))
+    print('Current Size N: ', np.shape(nafib_window))
 
+    '''
+    print('AFIB SHAPE: ',np.shape(afib_window))
+    print('N-AFIB SHAPE: ',np.shape(nafib_window))'''
+
+    afib_window = afib_window[1:,:]
+    nafib_window = nafib_window[1:,:]
+
+    '''#Make AFIB and N-AFIB data balanced
+    if len(nafib_window) < len(afib_window):
+        indeces = list(range(0,len(afib_window)))
+        random.shuffle(indeces)
+        indeces = indeces[0:len(nafib_window)]
+        afib_window = afib_window[indeces]
+    elif len(nafib_window) > len(afib_window):
+        indeces = list(range(0,len(nafib_window)))
+        random.shuffle(indeces)
+        indeces = indeces[0:len(afib_window)]
+        nafib_window = nafib_window[indeces]
 '''
-print('AFIB SHAPE: ',np.shape(afib_window))
-print('N-AFIB SHAPE: ',np.shape(nafib_window))'''
+    # SAVE AFIB DATA WITH LABELS TO CSV
+    path=str(patients[i])+'_AFIB.csv'
+    np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
+    print(len(afib_window), " rows, AFIB.csv dataset saved on ",ftarget_f_n)
 
-afib_window = afib_window[1:,:]
-nafib_window = nafib_window[1:,:]
+    # SAVE NO-AFIB DATA WITH LABELS TO CSV
+    path=str(patients[i])+'_N_AFIB.csv'
+    np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
+    print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
 
-#Make AFIB and N-AFIB data balanced
-if len(nafib_window) < len(afib_window):
-    indeces = list(range(0,len(afib_window)))
-    random.shuffle(indeces)
-    indeces = indeces[0:len(nafib_window)]
-    afib_window = afib_window[indeces]
-elif len(nafib_window) > len(afib_window):
-    indeces = list(range(0,len(nafib_window)))
-    random.shuffle(indeces)
-    indeces = indeces[0:len(afib_window)]
-    nafib_window = nafib_window[indeces]
-
-# SAVE AFIB DATA WITH LABELS TO CSV
-path='AFIB.csv'
-np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
-print(len(afib_window), " rows, AFIB.csv dataset saved on ",ftarget_f_n)
-
-# SAVE NO-AFIB DATA WITH LABELS TO CSV
-path='N_AFIB.csv'
-np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
-print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
-
-print('Time End: ', datetime.now())
+    print('Time End: ', datetime.now())
