@@ -48,8 +48,8 @@ y_test  = af_data['y_test']
 n_timesteps = x_train.shape[1]
 n_col = len(x_train[0])
 mode = 'concat'
-n_epochs = 4000 
-batch_size = int(1024*256) #n rows
+n_epochs = 1000 
+batch_size = int(1024*128) #n rows
 
 # SQEUENTIAL
 model = Sequential()
@@ -60,10 +60,6 @@ model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
 opt = Adam()
-met = [ Kmetrics.BinaryAccuracy, 
-        Kmetrics.SpecificityAtSensitivity,
-        Kmetrics.SensitivityAtSpecificity]
-
 # compile the model
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 

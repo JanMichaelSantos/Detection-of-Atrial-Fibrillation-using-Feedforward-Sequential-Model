@@ -1,26 +1,8 @@
-"""
-af_blind_fold_evaluation.py
 
-blindfold evaluating of model performance on the completely unseen test
-data set
-
-author:     alex shenfield
-date:       27/04/2018
-"""
-
-# let's do datascience ...
 import numpy as np
 import matplotlib.pyplot as plt
-
-# import keras deep learning functionality
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.layers import Bidirectional
-from keras.layers import GlobalMaxPool1D
-from keras.layers import Dense
-
-# scikit learn metrics for evaluation ...
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
@@ -37,42 +19,33 @@ import visualisation_utils as my_vis
 #
 
 # load the npz file
-data_path = './data/test_data.npz'
+data_path = './DATASETS//test_data.npz'
 af_data   = np.load(data_path)
 
 # extract the inputs and labels
 x_test  = af_data['x_data']
 y_test  = af_data['y_data']
 
-# reshape the data to be in the format that the lstm wants
-x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1)
-
-#
-# create the model
-#
-
 # set the model parameters
 n_timesteps = x_test.shape[1]
+n_col = len(x_test[0])
 mode = 'concat'
-batch_size = 1024
+n_epochs = 1000 
+batch_size = int(1024*256) #n rows
 
-# create a bidirectional lstm model (based around the model in:
-# https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
-# )
-inp = Input(shape=(n_timesteps,1,))
-x = Bidirectional(LSTM(200, 
-                       return_sequences=True))(inp)
-x = GlobalMaxPool1D()(x)
-x = Dense(50, activation="relu")(x)
-x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)
+# SQEUENTIAL
+model = Sequential()
+model.add(Dense(128, activation='relu', input_dim=n_col))
+model.add(Dropout(0.20))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
 #
 # load saved weights
 #
 
 # set the weights to load
-weights_path = './model/initial_runs_20180412_1345/af_lstm_weights.51-0.03.hdf5'
+weights_path = './model/initial_runs_20220919_0206/af_sequence_weights.828-0.18.hdf5'
 
 # load those weights and compile the model (which is needed before we can make
 # any predictions)

@@ -1,31 +1,14 @@
-"""
-af_results_analysis_crossvalidation.py
-
-load up the results we have got from the stratified 10 fold crossvalidation
-process, analyse the data, and show some pretty graphs 
-
-author:     alex shenfield
-date:       27/04/2018
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.metrics import confusion_matrix
-
-# my visualisation utilities for plotting some pretty graphs of classifier 
-# performance
 import visualisation_utils as my_vis
-
-#
-# main code
-#
 
 # we used 10-folds for the stratified cross validation process
 nfolds = 10
 
 # set the root directory for the data
-results_path = './model/cross_validation_20180417_1801/'
+results_path = './model/cross_validation_20220919_1051/'
 
 # get the predictions and ground truths from each cross validation fold
 predictions = list()

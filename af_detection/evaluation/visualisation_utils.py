@@ -1,15 +1,3 @@
-"""
-visualisation_utils.py
-
-make pretty graphs to show classifier performance
-
-(most of these are based on the really useful examples from the 
-scikit learn user guides!)
-
-author:     alex shenfield
-date:       27/04/2018
-"""
-
 # numpy is needed for everything :)
 import numpy as np
 import matplotlib.pyplot as plt

@@ -1,28 +1,6 @@
-"""
-af_model_crossvalidation.py
-
-fitting a simple bidirectional LSTM model to the af data - now including extra
-dropout, an extra fully connected layer, and using the keras functional model
-
-the ideas behind the bidirectional lstm model come from: 
-    
-https://machinelearningmastery.com/
-develop-bidirectional-lstm-sequence-classification-python-keras/
-
-this file runs stratified 10-fold crossvalidation
-
-author:     alex shenfield
-date:       01/04/2018
-"""
-
-# file handling functionality
 import os
-
-# useful utilities
 import time
 import pickle
-
-# let's do datascience ...
 import numpy as np
 
 # import keras deep learning functionality
@@ -55,37 +33,22 @@ af_data   = np.load(data_path)
 x_data = af_data['x_data']
 y_data = af_data['y_data']
 
-# reshape the data fto be in the format that the lstm wants
-x_data = x_data.reshape(x_data.shape[0], x_data.shape[1], 1)
-
 #
 # create and train the model
 #
 
 # set the model parameters
 n_timesteps = x_data.shape[1]
+n_col = len(x_data[0])
 mode = 'concat'
-n_epochs = 300
-batch_size = 2048
-
-# create a bidirectional lstm model (based around the model in:
-# https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
-# )
-'''inp = Input(shape=(n_timesteps,1,))
-x = Bidirectional(LSTM(200, 
-                       return_sequences=True, 
-                       dropout=0.1, 
-                       recurrent_dropout=0.1))(inp)
-x = GlobalMaxPool1D()(x)
-x = Dense(50, activation="relu")(x)
-x = Dropout(0.1)(x)
-x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)'''
+n_epochs = 1000 
+batch_size = int(1024*256) #n rows
 
 # SQEUENTIAL
 model = Sequential()
-model.add(Dense(200, activation='relu', input_dim=500))
-model.add(Dense(50, activation='relu'))
+model.add(Dense(128, activation='relu', input_dim=n_col))
+model.add(Dropout(0.20))
+model.add(Dense(32, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 # set the optimiser
