@@ -24,8 +24,8 @@ np.random.seed(seed)
 #
 
 # set the directory where the data lives
-froot = 'E:'
-fpath = ('/DATASETS/csv_files/')
+froot = 'F:'
+fpath = ('/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/w_500_balanced/')
 root_dir =  froot + fpath
 
 # get the patient IDs

@@ -14,10 +14,11 @@ seed = 1337
 np.random.seed(seed)
 
 # set the directory where the data lives
-froot = 'E:'
-fpath = ('/DATASETS/csv_files/')
+froot = 'F:'
+fpath = ('/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/w_500_balanced/')
 root_dir =  froot + fpath
 
+print(root_dir)
 # get the patient IDs
 filelist = glob.glob(root_dir + '*.csv', recursive=True)
 patients  = [(os.path.split(i)[1]).split('.')[0] for i in filelist]

@@ -6,6 +6,8 @@ Create a n
 import os
 import time
 import pickle
+from matplotlib import cm
+from matplotlib.cbook import flatten
 
 # let's do datascience ...
 import numpy as np
@@ -16,7 +18,7 @@ from keras.layers import Dense,Dropout
 from keras.optimizers import Adam
 import keras.metrics as Kmetrics
 from keras.callbacks import ModelCheckpoint
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, plot_confusion_matrix
 
 # fix random seed for reproduciblity
 seed = 1337
@@ -31,7 +33,7 @@ headless = False
 #
 
 # load the npz file
-data_path = './DATASETS/training_and_validation.npz'
+data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/training_and_validation.npz'
 af_data   = np.load(data_path)
 
 # extract the training and validation data sets from this data
@@ -48,15 +50,17 @@ y_test  = af_data['y_test']
 n_timesteps = x_train.shape[1]
 n_col = len(x_train[0])
 mode = 'concat'
-n_epochs = 1000 
+n_epochs = 1000 #1000
 batch_size = int(1024*128) #n rows
 
 # SQEUENTIAL
 model = Sequential()
-model.add(Dense(128, activation='relu', input_dim=n_col))
-model.add(Dropout(0.20))
+model.add(Dense(256, activation='relu', input_dim=n_col))
+model.add(Dropout(0.10))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
-model.add(Dense(1, activation='sigmoid'))
+#model.add(Dense(16, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))  #sigmoid
 
 # set the optimiser
 opt = Adam()
@@ -65,7 +69,7 @@ model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 
 # set up a model checkpoint callback (including making the directory where to 
 # save our weights)
-directory = './model/initial_runs_{0}/'.format(time.strftime("%Y%m%d_%H%M"))
+directory = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/model/initial_runs_{0}/'.format(time.strftime("%Y%m%d_%H%M"))
 os.makedirs(directory)
 filename  = 'af_sequence_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
 checkpointer = ModelCheckpoint(filepath=directory+filename, 
@@ -98,6 +102,10 @@ import matplotlib.pyplot as plt
 
 # plot the results
 # accuracy
+
+#change working directory to save on folder Plots
+os.chdir('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/')
+
 f1 = plt.figure()
 ax1 = f1.add_subplot(111)
 plt.plot(history.history['acc'])
@@ -110,8 +118,9 @@ plt.text(0.4, 0.05,
          ('validation accuracy = {0:.3f}'.format(best_accuracy)), 
          ha='left', va='center', 
          transform=ax1.transAxes)
-plt.savefig('./Plots/af_sequence_training_accuracy_{0}.png'
-            .format(time.strftime("%Y%m%d_%H%M")))
+plt.savefig('Plots/af_sequence_training_accuracy_{0:.3f}%_.png'
+            .format(best_accuracy*100)) #time.strftime("%Y%m%d_%H%M")
+plt.show()
 
 # loss
 f2 = plt.figure()
@@ -124,11 +133,11 @@ plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper right')
 plt.text(0.4, 0.05, 
          ('validation loss = {0:.3f}'
-          .format(min(history.history['val_loss']))), 
+        .format(min(history.history['val_loss']))), 
          ha='right', va='top', 
          transform=ax2.transAxes)
-plt.savefig('./Plots/af_sequence_training_loss_{0}.png'
-            .format(time.strftime("%Y%m%d_%H%M")))
+plt.savefig('Plots/af_sequence_training_loss_{0:.3f}%_.png'
+            .format(best_accuracy*100))
 
 # we're all done!
 print('all done!')

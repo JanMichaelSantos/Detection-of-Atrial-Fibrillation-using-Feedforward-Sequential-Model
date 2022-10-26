@@ -17,11 +17,14 @@ def plot_confusion_matrix(cm,
                           cmap=plt.cm.Blues):
 
     # should we normalise the confusion matrix?
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print('Confusion matrix, with normalization')
-    else:
-        print('Confusion matrix, without normalization')
+    #if normalize:
+    #    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    #    print('Confusion matrix, with normalization')
+    #else:
+    print('Confusion matrix, without normalization')
+    
+    #transpose
+    cm = np.transpose(cm)
 
     # display in command windows
     print(cm)
@@ -33,9 +36,7 @@ def plot_confusion_matrix(cm,
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)    
     
-    # if we want a title displayed
-    if title:        
-        plt.title(title)
+    plt.title(title)
 
     fmt = '.3f' if normalize else 'd'
     thresh = cm.max() / 2.
@@ -45,8 +46,8 @@ def plot_confusion_matrix(cm,
                  color="white" if cm[i, j] > thresh else "black")
 
     #plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    plt.ylabel('Predicted label')
+    plt.xlabel('True label')
 
 
 # define a simple function for plotting a roc curve
