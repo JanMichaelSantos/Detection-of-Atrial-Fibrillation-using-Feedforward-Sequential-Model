@@ -1,41 +1,24 @@
-"""
-af_initial_model_fitting.py
+'''
+Create a n
 
-fitting a simple bidirectional LSTM model to the af data - now including extra
-dropout, an extra fully connected layer, and using the keras functional model
 
-the ideas behind the bidirectional lstm model come from: 
-    
-https://machinelearningmastery.com/
-develop-bidirectional-lstm-sequence-classification-python-keras/
-
-author:     alex shenfield
-date:       01/04/2018
-"""
-
-# file handling functionality
+'''
 import os
-
-# useful utilities
 import time
 import pickle
+from matplotlib import cm
+from matplotlib.cbook import flatten
 
 # let's do datascience ...
 import numpy as np
 
 # import keras deep learning functionality
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.layers import Bidirectional
-from keras.layers import GlobalMaxPool1D
-from keras.layers import Dense
-from keras.layers import Dropout
-
-from keras.optimizers import SGD
+from keras.models import Sequential
+from keras.layers import Dense,Dropout
 from keras.optimizers import Adam
-
+import keras.metrics as Kmetrics
 from keras.callbacks import ModelCheckpoint
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, plot_confusion_matrix
 
 # fix random seed for reproduciblity
 seed = 1337
@@ -50,7 +33,7 @@ headless = False
 #
 
 # load the npz file
-data_path = './data/training_and_validation.npz'
+data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/training_and_validation.npz'
 af_data   = np.load(data_path)
 
 # extract the training and validation data sets from this data
@@ -65,34 +48,29 @@ y_test  = af_data['y_test']
 
 # set the model parameters
 n_timesteps = x_train.shape[1]
+n_col = len(x_train[0])
 mode = 'concat'
-n_epochs = 2 #200
-batch_size = 1024
+n_epochs = 1000 #1000
+batch_size = int(1024*128) #n rows
 
-# create a bidirectional lstm model (based around the model in:
-# https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
-# )
-inp = Input(shape=(n_timesteps,1,))
-x = Bidirectional(LSTM(200, 
-                       return_sequences=True, 
-                       dropout=0.1, recurrent_dropout=0.1))(inp)
-x = GlobalMaxPool1D()(x)
-x = Dense(50, activation="relu")(x)
-x = Dropout(0.1)(x)
-x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)
+# SQEUENTIAL
+model = Sequential()
+model.add(Dense(256, activation='relu', input_dim=n_col))
+model.add(Dropout(0.10))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))  #sigmoid classification layer
 
 # set the optimiser
 opt = Adam()
-
 # compile the model
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 
 # set up a model checkpoint callback (including making the directory where to 
 # save our weights)
-directory = './model/initial_runs_{0}/'.format(time.strftime("%Y%m%d_%H%M"))
+directory = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/model/initial_runs_{0}/'.format(time.strftime("%Y%m%d_%H%M"))
 os.makedirs(directory)
-filename  = 'af_lstm_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
+filename  = 'af_sequence_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
 checkpointer = ModelCheckpoint(filepath=directory+filename, 
                                verbose=1, 
                                save_best_only=True)
@@ -122,39 +100,43 @@ if headless:
 import matplotlib.pyplot as plt
 
 # plot the results
-
 # accuracy
+
+#change working directory to save on folder Plots
+os.chdir('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/')
+
 f1 = plt.figure()
 ax1 = f1.add_subplot(111)
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
-plt.title('training and validation accuracy of af diagnosis')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.title('Training and Validation Accuracy of AFib diagnosis')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
 plt.text(0.4, 0.05, 
-         ('validation accuracy = {0:.3f}'.format(best_accuracy)), 
+         ('Validation Accuracy = {0:.3f}'.format(best_accuracy)), 
          ha='left', va='center', 
          transform=ax1.transAxes)
-plt.savefig('af_lstm_training_accuracy_{0}.png'
-            .format(time.strftime("%Y%m%d_%H%M")))
+plt.savefig('Plots/af_sequence_training_accuracy_{0:.3f}%_.png'
+            .format(best_accuracy*100)) #time.strftime("%Y%m%d_%H%M")
+plt.show()
 
 # loss
 f2 = plt.figure()
 ax2 = f2.add_subplot(111)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
-plt.title('training and validation loss of af diagnosis')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper right')
+plt.title('Training and Validation Loss of AFib Diagnosis')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper right')
 plt.text(0.4, 0.05, 
-         ('validation loss = {0:.3f}'
-          .format(min(history.history['val_loss']))), 
+         ('Validation Loss = {0:.3f}'
+        .format(min(history.history['val_loss']))), 
          ha='right', va='top', 
          transform=ax2.transAxes)
-plt.savefig('af_lstm_training_loss_{0}.png'
-            .format(time.strftime("%Y%m%d_%H%M")))
+plt.savefig('Plots/af_sequence_training_loss_{0:.3f}%_.png'
+            .format(best_accuracy*100))
 
 # we're all done!
 print('all done!')

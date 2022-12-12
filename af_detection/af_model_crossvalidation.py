@@ -1,32 +1,10 @@
-"""
-af_model_crossvalidation.py
-
-fitting a simple bidirectional LSTM model to the af data - now including extra
-dropout, an extra fully connected layer, and using the keras functional model
-
-the ideas behind the bidirectional lstm model come from: 
-    
-https://machinelearningmastery.com/
-develop-bidirectional-lstm-sequence-classification-python-keras/
-
-this file runs stratified 10-fold crossvalidation
-
-author:     alex shenfield
-date:       01/04/2018
-"""
-
-# file handling functionality
 import os
-
-# useful utilities
 import time
 import pickle
-
-# let's do datascience ...
 import numpy as np
 
 # import keras deep learning functionality
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.layers import Input
 from keras.layers import LSTM
 from keras.layers import Bidirectional
@@ -48,15 +26,12 @@ np.random.seed(seed)
 #
 
 # load the npz file
-data_path = './data/training_data.npz'
+data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/training_data.npz'
 af_data   = np.load(data_path)
 
 # extract the training and validation data sets from this data
 x_data = af_data['x_data']
 y_data = af_data['y_data']
-
-# reshape the data fto be in the format that the lstm wants
-x_data = x_data.reshape(x_data.shape[0], x_data.shape[1], 1)
 
 #
 # create and train the model
@@ -64,23 +39,20 @@ x_data = x_data.reshape(x_data.shape[0], x_data.shape[1], 1)
 
 # set the model parameters
 n_timesteps = x_data.shape[1]
+n_col = len(x_data[0])
 mode = 'concat'
-n_epochs = 80
-batch_size = 1024
+n_epochs = 1000 
+batch_size = int(1024*256) #n rows
 
-# create a bidirectional lstm model (based around the model in:
-# https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
-# )
-inp = Input(shape=(n_timesteps,1,))
-x = Bidirectional(LSTM(200, 
-                       return_sequences=True, 
-                       dropout=0.1, 
-                       recurrent_dropout=0.1))(inp)
-x = GlobalMaxPool1D()(x)
-x = Dense(50, activation="relu")(x)
-x = Dropout(0.1)(x)
-x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)
+# SQEUENTIAL
+model = Sequential()
+model.add(Dense(256, activation='relu', input_dim=n_col))
+model.add(Dropout(0.10))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+#model.add(Dense(16, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))  #sigmoid
+
 
 # set the optimiser
 opt = Adam()
@@ -99,7 +71,7 @@ initial_weights = model.get_weights()
 print('doing cross validation ...')
 
 # set the root directory for results
-results_dir = './model/cross_validation_{0}/'.format(
+results_dir = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/model/cross_validation_{0}/'.format(
         time.strftime("%Y%m%d_%H%M"))
 
 # import stratified k-fold functions
@@ -125,7 +97,7 @@ for train_index, test_index in kf.split(x_data, y_data):
     # to save our weights)
     directory = results_dir + 'fold_{0}/'.format(fold)
     os.makedirs(directory)
-    filename  = 'af_lstm_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
+    filename  = 'af_sequence_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
     checkpointer = ModelCheckpoint(filepath=directory+filename, 
                                    verbose=0, 
                                    save_best_only=True)    
@@ -143,7 +115,7 @@ for train_index, test_index in kf.split(x_data, y_data):
                         callbacks=[checkpointer])    
     
     # run the final model on the validation data and save the predictions and
-    # the true labels so we can plot a roc curve at a later date
+    # the true labels so we can plot a roc curve at a later date (af_crossvalidation_evaluation)
     y_predict = model.predict(x_test, batch_size=batch_size, verbose=0)
     np.save(directory + 'test_predictions.npy', y_predict)
     np.save(directory + 'test_labels.npy', y_test)
@@ -166,7 +138,10 @@ for train_index, test_index in kf.split(x_data, y_data):
 #
 # tidy up ...
 #
-    
+
+
+
+
 # print the final results
 print('overall performance:')
 print('{0:.5f}% (+/- {1:.5f}%)'.format(

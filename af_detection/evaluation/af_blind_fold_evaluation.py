@@ -1,26 +1,8 @@
-"""
-af_blind_fold_evaluation.py
 
-blindfold evaluating of model performance on the completely unseen test
-data set
-
-author:     alex shenfield
-date:       27/04/2018
-"""
-
-# let's do datascience ...
 import numpy as np
 import matplotlib.pyplot as plt
-
-# import keras deep learning functionality
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.layers import Bidirectional
-from keras.layers import GlobalMaxPool1D
-from keras.layers import Dense
-
-# scikit learn metrics for evaluation ...
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
@@ -37,42 +19,34 @@ import visualisation_utils as my_vis
 #
 
 # load the npz file
-data_path = './data/test_data.npz'
+data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/test_data.npz'
 af_data   = np.load(data_path)
 
 # extract the inputs and labels
 x_test  = af_data['x_data']
 y_test  = af_data['y_data']
 
-# reshape the data to be in the format that the lstm wants
-x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1)
-
-#
-# create the model
-#
-
 # set the model parameters
 n_timesteps = x_test.shape[1]
+n_col = len(x_test[0])
 mode = 'concat'
-batch_size = 1024
+n_epochs = 1000 
+batch_size = int(1024*256) #n rows
 
-# create a bidirectional lstm model (based around the model in:
-# https://www.kaggle.com/jhoward/improved-lstm-baseline-glove-dropout
-# )
-inp = Input(shape=(n_timesteps,1,))
-x = Bidirectional(LSTM(200, 
-                       return_sequences=True))(inp)
-x = GlobalMaxPool1D()(x)
-x = Dense(50, activation="relu")(x)
-x = Dense(1, activation='sigmoid')(x)
-model = Model(inputs=inp, outputs=x)
+# SQEUENTIAL
+model = Sequential()
+model.add(Dense(256, activation='relu', input_dim=n_col))
+model.add(Dropout(0.10))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))  #sigmoid
 
 #
 # load saved weights
 #
 
 # set the weights to load
-weights_path = './model/initial_runs_20180412_1345/af_lstm_weights.51-0.03.hdf5'
+weights_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/model/initial_runs_20221026_2053/af_sequence_weights.986-0.14.hdf5'
 
 # load those weights and compile the model (which is needed before we can make
 # any predictions)
@@ -88,7 +62,7 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['acc'])
 
 # use the model to predict the labels
 y_predict = model.predict(x_test, batch_size=batch_size, verbose=0)
-np.save('./results/blindfold_predictions.npy', y_predict)
+np.save('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/blindfold_predictions.npy', y_predict)
 
 #
 # evaluate predictions
@@ -102,7 +76,7 @@ print('blind-fold accuracy is {0:.5f}'.format(accuracy))
 precision = precision_score(y_test, np.round(y_predict))
 print('blind-fold precision is {0:.5f}'.format(precision))
 
-# recall
+# sensitivity
 recall = recall_score(y_test, np.round(y_predict))
 print('blind-fold recall is {0:.5f}'.format(recall))
 
@@ -120,12 +94,21 @@ classes = ['normal', 'af']
 # get the confusion matrix and plot both the un-normalised and normalised
 # confusion plots 
 cm = confusion_matrix(y_test, np.round(y_predict))
+print(cm[0][0])
+print(cm[1][0])
+print(cm[1][1])
+print(cm[0][1])
+
+true_negative =  cm[0][0]
+false_positive = cm[0][1]
+
+specificity = (true_negative/(true_negative+false_positive))*100
 
 plt.figure(figsize=[5,5])
 my_vis.plot_confusion_matrix(cm, 
                       classes=classes,
                       title=None)
-plt.savefig('./results/blind_confusion_plot.png',
+plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/blind_confusion_plot.png',
             dpi=600, bbox_inches='tight', pad_inches=0.5)
 
 plt.figure(figsize=[5,5])
@@ -133,15 +116,31 @@ my_vis.plot_confusion_matrix(cm,
                       classes=classes,
                       normalize=True,
                       title=None)
-plt.savefig('./results/blind_confusion_plot_normalised.png',
+plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/blind_confusion_plot_normalised.png',
             dpi=600, bbox_inches='tight', pad_inches=0.5)
 plt.show()
+
+recall = recall*100
+precision = precision*100
+f1 = f1*100
+accuracy = accuracy*100
+
+fname_stats = 'Metrics.csv'
+with open (fname_stats,'w+') as f:
+        f.write('Sensitivity,Specificity,Precision, F1-Score,Accuracy\n')
+        f.write(str(recall)+',')
+        f.write(str(specificity)+',')
+        f.write(str(precision)+',')
+        f.write(str(f1)+',')
+        f.write(str(accuracy)+'\n')
+f.close()
+
 
 # calculate and plot the roc curve
 plt.figure(figsize=[5,5])
 title = 'Receiver operating characteristic curve showing ' \
         'AF diagnostic performance'
 my_vis.plot_roc_curve(y_predict, y_test, title=None)        
-plt.savefig('./results/blind_roc_curve.png',
+plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/blind_roc_curve.png',
             dpi=600, bbox_inches='tight', pad_inches=0.5)
 plt.show()
