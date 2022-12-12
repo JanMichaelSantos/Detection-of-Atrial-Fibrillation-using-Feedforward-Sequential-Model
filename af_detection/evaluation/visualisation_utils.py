@@ -16,17 +16,10 @@ def plot_confusion_matrix(cm,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
 
-    # should we normalise the confusion matrix?
-    #if normalize:
-    #    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    #    print('Confusion matrix, with normalization')
-    #else:
-    print('Confusion matrix, without normalization')
-    
+
+    print('Confusion matrix')
     #transpose
     cm = np.transpose(cm)
-
-    # display in command windows
     print(cm)
 
     # create a plot for the confusion matrix

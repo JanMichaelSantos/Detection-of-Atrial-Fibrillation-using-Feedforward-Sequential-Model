@@ -1,14 +1,5 @@
-"""
-af_blind_fold_data_exporation.py
-
-exploring the atrial fibrillation data set
-"""
-
-# file handling functionality
 import os
 import glob
-
-# let's do datascience ...
 import pandas as pd
 import numpy as np
 
@@ -16,9 +7,7 @@ import numpy as np
 seed = 1337
 np.random.seed(seed)
 
-#
 # read and save the data to use in testing
-#
 
 # set the directory where the data lives
 froot = 'F:'

@@ -1,3 +1,6 @@
+'''
+Blindfold validation 
+'''
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,20 +12,11 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-
-# my visualisation utilities for plotting some pretty graphs of classifier 
-# performance
 import visualisation_utils as my_vis
 
-#
-# get the data
-#
-
-# load the npz file
 data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/test_data.npz'
 af_data   = np.load(data_path)
 
-# extract the inputs and labels
 x_test  = af_data['x_data']
 y_test  = af_data['y_data']
 
@@ -33,17 +27,13 @@ mode = 'concat'
 n_epochs = 1000 
 batch_size = int(1024*256) #n rows
 
-# SQEUENTIAL
+# Sequential
 model = Sequential()
 model.add(Dense(256, activation='relu', input_dim=n_col))
 model.add(Dropout(0.10))
 model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))  #sigmoid
-
-#
-# load saved weights
-#
 
 # set the weights to load
 weights_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/model/initial_runs_20221026_2053/af_sequence_weights.986-0.14.hdf5'
@@ -53,20 +43,13 @@ weights_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/model/initial_runs_2022102
 model.load_weights(weights_path)
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['acc'])
 
-# note: although we have specified an optimiser in our model compilation, it
-# is obviously not used ...
-
-#
 # predict the labels using the model and evaluate over a range of metrics
-#
 
 # use the model to predict the labels
 y_predict = model.predict(x_test, batch_size=batch_size, verbose=0)
 np.save('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/blindfold_predictions.npy', y_predict)
 
-#
 # evaluate predictions
-#
 
 # accuracy
 accuracy = accuracy_score(y_test, np.round(y_predict))
@@ -134,7 +117,6 @@ with open (fname_stats,'w+') as f:
         f.write(str(f1)+',')
         f.write(str(accuracy)+'\n')
 f.close()
-
 
 # calculate and plot the roc curve
 plt.figure(figsize=[5,5])

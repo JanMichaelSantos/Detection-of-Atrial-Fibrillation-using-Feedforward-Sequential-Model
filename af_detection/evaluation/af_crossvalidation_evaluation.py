@@ -1,3 +1,7 @@
+'''
+Visualizations for crossvalidation
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -8,7 +12,6 @@ import visualisation_utils as my_vis
 nfolds = 10
 
 # set the root directory for the data
-#os.chdir('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/')
 results_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/model/cross_validation_20221206_2008/'
 
 # get the predictions and ground truths from each cross validation fold
@@ -24,9 +27,7 @@ for f in range(0, nfolds):
 y_pred = np.concatenate(predictions)
 y_true = np.concatenate(true_labels)
 
-#
 # confusion matrix and plot
-#
 
 # set the names of the classes
 classes = ['normal', 'af']
@@ -42,22 +43,14 @@ my_vis.plot_confusion_matrix(cm,
 plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/cv_confusion_plot.png',
             dpi=600, bbox_inches='tight', pad_inches=0.5)
 
-#plt.figure(figsize=[5,5])
-#my_vis.plot_confusion_matrix(cm, 
-#                      classes=classes,
-#                      normalize=True,
-#                      title=None)
-#plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/cv_confusion_plot_normalised.png',
-#            dpi=600, bbox_inches='tight', pad_inches=0.5)
-
 plt.show()
 
-#
 # calculate and plot the roc curve
-# 
+
 plt.figure(figsize=[5,5])
 title = 'Receiver operating characteristic curve showing ' \
         'AF diagnostic performance'
+
 my_vis.plot_roc_curve(y_pred, y_true, title=None)        
 plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/cv_roc_curve.png',
             dpi=600, bbox_inches='tight', pad_inches=0.5)

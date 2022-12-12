@@ -1,18 +1,13 @@
 '''
-Create a n
-
-
+Training of model
 '''
+
 import os
 import time
 import pickle
 from matplotlib import cm
 from matplotlib.cbook import flatten
-
-# let's do datascience ...
 import numpy as np
-
-# import keras deep learning functionality
 from keras.models import Sequential
 from keras.layers import Dense,Dropout
 from keras.optimizers import Adam
@@ -20,17 +15,10 @@ import keras.metrics as Kmetrics
 from keras.callbacks import ModelCheckpoint
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, plot_confusion_matrix
 
-# fix random seed for reproduciblity
 seed = 1337
 np.random.seed(seed)
 
-# tell the application whether we are running on a server or not (so as to
-# influence which backend matplotlib uses for saving plots)
 headless = False
-
-#
-# get the data
-#
 
 # load the npz file
 data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/training_and_validation.npz'
@@ -42,10 +30,6 @@ y_train = af_data['y_train']
 x_test  = af_data['x_test']
 y_test  = af_data['y_test']
 
-#
-# create and train the model
-#
-
 # set the model parameters
 n_timesteps = x_train.shape[1]
 n_col = len(x_train[0])
@@ -53,7 +37,7 @@ mode = 'concat'
 n_epochs = 1000 #1000
 batch_size = int(1024*128) #n rows
 
-# SQEUENTIAL
+# sequential
 model = Sequential()
 model.add(Dense(256, activation='relu', input_dim=n_col))
 model.add(Dropout(0.10))
@@ -63,11 +47,11 @@ model.add(Dense(1, activation='sigmoid'))  #sigmoid classification layer
 
 # set the optimiser
 opt = Adam()
+
 # compile the model
 model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 
-# set up a model checkpoint callback (including making the directory where to 
-# save our weights)
+# set up a model checkpoint callback (including making the directory where to save our weights)
 directory = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/model/initial_runs_{0}/'.format(time.strftime("%Y%m%d_%H%M"))
 os.makedirs(directory)
 filename  = 'af_sequence_weights.{epoch:02d}-{val_loss:.2f}.hdf5'
@@ -100,7 +84,6 @@ if headless:
 import matplotlib.pyplot as plt
 
 # plot the results
-# accuracy
 
 #change working directory to save on folder Plots
 os.chdir('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/')
@@ -138,5 +121,4 @@ plt.text(0.4, 0.05,
 plt.savefig('Plots/af_sequence_training_loss_{0:.3f}%_.png'
             .format(best_accuracy*100))
 
-# we're all done!
-print('all done!')
+print('done')

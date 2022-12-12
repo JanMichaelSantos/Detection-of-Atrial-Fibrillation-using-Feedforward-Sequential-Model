@@ -1,29 +1,23 @@
+'''
+Base Code for crossvalidation
+'''
+
 import os
 import time
 import pickle
 import numpy as np
-
-# import keras deep learning functionality
 from keras.models import Model, Sequential
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.layers import Bidirectional
-from keras.layers import GlobalMaxPool1D
 from keras.layers import Dense
 from keras.layers import Dropout
-
 from keras.optimizers import SGD
 from keras.optimizers import Adam
-
 from keras.callbacks import ModelCheckpoint
 
 # fix random seed for reproduciblity
 seed = 1337
 np.random.seed(seed)
 
-#
 # get the data
-#
 
 # load the npz file
 data_path = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/DATASETS/training_data.npz'
@@ -33,9 +27,7 @@ af_data   = np.load(data_path)
 x_data = af_data['x_data']
 y_data = af_data['y_data']
 
-#
 # create and train the model
-#
 
 # set the model parameters
 n_timesteps = x_data.shape[1]
@@ -44,7 +36,7 @@ mode = 'concat'
 n_epochs = 1000 
 batch_size = int(1024*256) #n rows
 
-# SQEUENTIAL
+# sequential
 model = Sequential()
 model.add(Dense(256, activation='relu', input_dim=n_col))
 model.add(Dropout(0.10))
@@ -63,11 +55,7 @@ model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['acc'])
 # get the initial weights
 initial_weights = model.get_weights()
 
-#
 # do stratified k-fold crossvalidation on the model
-#
-
-# progress ...
 print('doing cross validation ...')
 
 # set the root directory for results
@@ -135,13 +123,6 @@ for train_index, test_index in kf.split(x_data, y_data):
     # next fold ...
     fold = fold + 1
 
-#
-# tidy up ...
-#
-
-
-
-
 # print the final results
 print('overall performance:')
 print('{0:.5f}% (+/- {1:.5f}%)'.format(
@@ -153,5 +134,4 @@ print('{0:.5f}% (+/- {1:.5f}%)'.format(
 with open(results_dir + 'xval_history', 'wb') as file:
     pickle.dump(xval_history, file)
 
-# we're all done!
-print('all done!')
+print('done!')
