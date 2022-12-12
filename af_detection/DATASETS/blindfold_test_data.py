@@ -2,9 +2,6 @@
 af_blind_fold_data_exporation.py
 
 exploring the atrial fibrillation data set
-
-author:     alex shenfield
-date:       01/04/2018
 """
 
 # file handling functionality

@@ -19,7 +19,7 @@ import random
 from datetime import datetime
 
 #change working directory
-froot = 'E:'
+froot = 'F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection'
 os.chdir(froot+"/DATASETS/mit-bih-atrial-fibrillation-database-1.0.0/files/")
 
 #Get list of all .dat files in the current folder
@@ -27,8 +27,6 @@ dat_files=glob.glob('*.dat')
 patients = [(os.path.split(i)[1]).split('.')[0] for i in dat_files]
 
 ftarget_f_n=  froot + '/DATASETS/csv_files/'
-
-
 
 # NOTE!!! THIS PATIENTS ONLY HAS 1 LABEL
 # patient[13] aux note label is only (N, all data is normal
@@ -50,6 +48,7 @@ for i in range(15,len(dat_files)):
 
     #READ ATR ANNOTATION FILE
     record_atr = wfdb.rdann(patients[i],extension ='atr',shift_samps=True)
+
     #READ QRSC ANNOTATION FILE
     record_qrsc = wfdb.rdann(patients[i],extension ='qrs',shift_samps=True)
     
@@ -67,14 +66,22 @@ for i in range(15,len(dat_files)):
         for atr_index in range(0,len(record_atr.sample)-1):
             #Find AUX_NOTE of lower boundary
             if rr_i[-1] < record_atr.sample[atr_index+1] and rr_i[0] >=  record_atr.sample[atr_index]: #Check if window is between N and AFIB
-                #Apply processing on chose record samples
+                #Apply processing on chosen record samples
                 w1 = signal.resample(record[rr_i[0]:rr_i[-1]],window_size)
+                
+                print(len(record[rr_i[0]:rr_i[-1]]))
+                input()
+                
                 #Filter Signals
                 fs_n = 250
                 hpf = signal.butter(6, 1, 'high', fs=fs_n, output='sos') #Highpass Butterworth filter, 1Hz cutoff
                 lpf = signal.butter(6, 35, 'low', fs=fs_n, output='sos') #Lowpass Butterworth filter, 35Hz cutoff
 
                 record_f = signal.sosfilt(lpf, signal.sosfilt(hpf, w1)) #Apply filter
+                # plt.figure(figsize=[5,5])
+                # plt.title("Filtered Window", fontsize = 20)
+                # plt.plot(record_f)
+                # plt.show()
 
                 #Normalize Signals
                 record_f_2c = np.column_stack((record_f,record_f))
@@ -86,7 +93,10 @@ for i in range(15,len(dat_files)):
                     nafib_window = np.vstack((nafib_window ,record_f_n[:,0]))
                 elif record_atr.aux_note[atr_index] == '(AFIB': 
                     afib_window = np.vstack((afib_window ,record_f_n[:,0]))
-
+                # plt.figure(figsize=[5,5])
+                # plt.title("Normalized Window", fontsize = 20)
+                # plt.plot(record_f_2c)
+                # plt.show()
                 break # Exit Finding of ATR index loop 
                     
             else: 
@@ -101,26 +111,14 @@ for i in range(15,len(dat_files)):
     afib_window = afib_window[1:,:]
     nafib_window = nafib_window[1:,:]
 
-    '''#Make AFIB and N-AFIB data balanced
-    if len(nafib_window) < len(afib_window):
-        indeces = list(range(0,len(afib_window)))
-        random.shuffle(indeces)
-        indeces = indeces[0:len(nafib_window)]
-        afib_window = afib_window[indeces]
-    elif len(nafib_window) > len(afib_window):
-        indeces = list(range(0,len(nafib_window)))
-        random.shuffle(indeces)
-        indeces = indeces[0:len(afib_window)]
-        nafib_window = nafib_window[indeces]
-'''
-    # SAVE AFIB DATA WITH LABELS TO CSV
-    path=str(patients[i])+'_AFIB.csv'
-    np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
-    print(len(afib_window), " rows, AFIB.csv dataset saved on ",ftarget_f_n)
+    # #SAVE AFIB DATA WITH LABELS TO CSV
+    # path=str(patients[i])+'_AFIB.csv'
+    # np.savetxt(ftarget_f_n+path, np.hstack((np.ones((len(afib_window),1)),afib_window)),fmt='%1.3f',delimiter=",")
+    # print(len(afib_window), " rows, AFIB.csv dataset saved on ",ftarget_f_n)
 
-    # SAVE NO-AFIB DATA WITH LABELS TO CSV
-    path=str(patients[i])+'_N_AFIB.csv'
-    np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
-    print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
+    # # SAVE NO-AFIB DATA WITH LABELS TO CSV
+    # path=str(patients[i])+'_N_AFIB.csv'
+    # np.savetxt(ftarget_f_n+path, np.hstack((np.zeros((len(nafib_window),1)),nafib_window)),fmt='%1.3f',delimiter=",")
+    # print(len(nafib_window), " rows, N_AFIB.csv dataset saved on ",ftarget_f_n)
 
-    print('Time End: ', datetime.now())
+    # print('Time End: ', datetime.now())

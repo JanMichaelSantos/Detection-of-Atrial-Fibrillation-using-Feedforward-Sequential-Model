@@ -94,8 +94,13 @@ classes = ['normal', 'af']
 # get the confusion matrix and plot both the un-normalised and normalised
 # confusion plots 
 cm = confusion_matrix(y_test, np.round(y_predict))
+print(cm[0][0])
+print(cm[1][0])
+print(cm[1][1])
+print(cm[0][1])
+
 true_negative =  cm[0][0]
-false_positive = cm[1][0]
+false_positive = cm[0][1]
 
 specificity = (true_negative/(true_negative+false_positive))*100
 
@@ -114,6 +119,11 @@ my_vis.plot_confusion_matrix(cm,
 plt.savefig('F:/1_COLLEGE/TERM 9/CAPSTONE/Capstone/af_detection/results/blind_confusion_plot_normalised.png',
             dpi=600, bbox_inches='tight', pad_inches=0.5)
 plt.show()
+
+recall = recall*100
+precision = precision*100
+f1 = f1*100
+accuracy = accuracy*100
 
 fname_stats = 'Metrics.csv'
 with open (fname_stats,'w+') as f:

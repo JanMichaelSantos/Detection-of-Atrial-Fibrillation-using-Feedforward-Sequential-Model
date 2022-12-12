@@ -87,7 +87,7 @@ final_accuracy = list()
 final_loss = list()
 
 # do cross validation
-fold = 10
+fold = 0
 for train_index, test_index in kf.split(x_data, y_data):
   
     # progress ...
@@ -115,7 +115,7 @@ for train_index, test_index in kf.split(x_data, y_data):
                         callbacks=[checkpointer])    
     
     # run the final model on the validation data and save the predictions and
-    # the true labels so we can plot a roc curve at a later date
+    # the true labels so we can plot a roc curve at a later date (af_crossvalidation_evaluation)
     y_predict = model.predict(x_test, batch_size=batch_size, verbose=0)
     np.save(directory + 'test_predictions.npy', y_predict)
     np.save(directory + 'test_labels.npy', y_test)

@@ -59,8 +59,7 @@ model.add(Dense(256, activation='relu', input_dim=n_col))
 model.add(Dropout(0.10))
 model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
-#model.add(Dense(16, activation='relu'))
-model.add(Dense(1, activation='sigmoid'))  #sigmoid
+model.add(Dense(1, activation='sigmoid'))  #sigmoid classification layer
 
 # set the optimiser
 opt = Adam()
@@ -110,12 +109,12 @@ f1 = plt.figure()
 ax1 = f1.add_subplot(111)
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
-plt.title('training and validation accuracy of af diagnosis')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.title('Training and Validation Accuracy of AFib diagnosis')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
 plt.text(0.4, 0.05, 
-         ('validation accuracy = {0:.3f}'.format(best_accuracy)), 
+         ('Validation Accuracy = {0:.3f}'.format(best_accuracy)), 
          ha='left', va='center', 
          transform=ax1.transAxes)
 plt.savefig('Plots/af_sequence_training_accuracy_{0:.3f}%_.png'
@@ -127,12 +126,12 @@ f2 = plt.figure()
 ax2 = f2.add_subplot(111)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
-plt.title('training and validation loss of af diagnosis')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper right')
+plt.title('Training and Validation Loss of AFib Diagnosis')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper right')
 plt.text(0.4, 0.05, 
-         ('validation loss = {0:.3f}'
+         ('Validation Loss = {0:.3f}'
         .format(min(history.history['val_loss']))), 
          ha='right', va='top', 
          transform=ax2.transAxes)
